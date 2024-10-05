@@ -1,0 +1,5 @@
+node_modules
+.vscode
+dist
+remote-debug-profile
+bun.lockb

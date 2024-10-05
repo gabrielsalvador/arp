@@ -1,0 +1,26 @@
+#main-layout{
+    display: grid;
+    grid-template-areas: 
+        "topbar         topbar      topbar          right-sidebar"
+        "left-sidebar    main main   right-sidebar"
+        "left-sidebar    main main   right-sidebar"
+        "left-footer     left-footer  right-footer  right-footer";
+    grid-template-columns: 7rem 1fr 1fr 12rem;
+    grid-template-rows: 4rem 1fr 1fr 26rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    gap: 0.2rem;
+    align-items: stretch; 
+
+}
+
+
+#main-layout > *{
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    overflow: hidden;
+    
+}
