@@ -6,6 +6,7 @@ type Dragging = {
     current?: number[],
     startTime?: number,
     startNote?: number,
+    startPos?: number[],
 }
 
 type Note = {
@@ -27,7 +28,7 @@ interface PianoRollProps {
     keyboardWidth?: number;      // Default: 40
 
     // Layout and Ranges
-    timeBase?: number;              // Default: 480
+    pulsesPerQuarterNote?: number;              // Default: 480
     _xRange?: number[];                // Default: 16
     _yRange?: number[];                // Default: 16
 
@@ -39,6 +40,7 @@ interface PianoRollProps {
     octaveAdjustment?: number;                  // Default: -1
     defaultVelocity?: number;                   // Default: 100
     enabled?: boolean;                          // Default: true
+
 
     // Playback
     timeCursorPosition?: number;        // Default: 0
@@ -52,6 +54,7 @@ interface PianoRollProps {
     colorLightKeys?: string;             // Default: "#ccc"
     colorDarkKeys?: string;              // Default: "#aaa"
     colorGridLines?: string;             // Default: "#666"
+    colorGridSection?: string;           // Default: "#999"
     colorNote?: string;                  // Default: "#f22"
     colorNoteSelected?: string;          // Default: "#0f0"
     colorNoteBorder?: string;            // Default: "#000"
@@ -78,20 +81,20 @@ interface PianoRollProps {
     2 = draw white key (F)
     1 = draw normal black key
 */
-const halfTones = [6,1,0,1,0,2,1,0,1,0,1,0];
+const halfTones = [6, 1, 0, 1, 0, 2, 1, 0, 1, 0, 1, 0];
 
 
 
 
 export const PianoRoll: React.FC<PianoRollProps> = ({
     // Dimensions
-    width = 840,
+    width = 84,
     height = 320,
 
     // Layout and Ranges
-    timeBase = 480,
+    pulsesPerQuarterNote: timeBase = 480,
     _xRange = [1.5, 40],
-    _yRange =  [60, 64],
+    _yRange = [60, 64],
     xRulerSize = 24,
     yRulerSize = 24,
     keyboardWidth = 80,
@@ -116,6 +119,7 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
     colorLightKeys = "#ccc",
     colorDarkKeys = "#aaa",
     colorGridLines = "#666",
+    colorGridSection = "#999",
     colorNote = "#f22",
     colorNoteSelected = "#0f0",
     colorNoteBorder = "#555",
@@ -150,44 +154,50 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
 
     const [yRange, setYRange] = React.useState<number[]>(_yRange);
     const [xRange, setXRange] = React.useState<number[]>(_xRange);
+    const [selectionRect, setSelectionRect] = React.useState<number[] | null>(null);
 
 
     //redraw effect
     useEffect(() => {
-        console.log('redraw');
-
         const ctx = canvasRef.current?.getContext('2d');
         const keyboardCtx = keyboardRef.current?.getContext('2d');
         if (!ctx || !keyboardCtx) return;
 
         ctx.clearRect(0, 0, width, height);
-        keyboardCtx.clearRect(0, 0, keyboardWidth, height);
-
+        keyboardCtx.clearRect(0, 0, keyboardWidth, height)
 
         drawGrid(ctx);
         drawKeyboard(keyboardCtx);
 
 
-    }, [cursorPosition, width, dragging, midiNotes, keyboardWidth, yRulerSize, xRange, yRange,_yRange]);
+    }, [ width, dragging, midiNotes, keyboardWidth, yRulerSize, xRange,_xRange, yRange, _yRange]);
 
 
-    //redraw overlay effect ( no need to redraw grid )
+    //redraw overlay effect (selection area, cursor)
     useEffect(() => {
         const ctx = overlayCanvasRef.current?.getContext('2d');
         if (!ctx) return;
         ctx.clearRect(0, 0, width, height);
+
+        document.addEventListener('mousemove', handleMouseMoveOnSequencer);
+        document.addEventListener('mouseup', () => {
+            setDragging(null);
+            document.removeEventListener('mousemove', handleMouseMoveOnSequencer);
+        });
+
         drawTimeCursor(ctx);
-    }, [cursorPosition]);
+        drawSelectionArea(ctx);
+    }, [cursorPosition, selectionRect, dragging]);
 
 
-    const drawGrid = useCallback((ctx) => {
+    const drawGrid = useCallback((ctx: CanvasRenderingContext2D) => {
         const ySpan = yRange[1] - yRange[0]; // range from min to max note ( can be float )
         if (ySpan <= 0) return; // invalid range
 
         const stepHeight = height / ySpan;
         let pitch = Math.floor(yRange[1]) + 1
-        console.log(yRange[1]);
 
+        ctx.globalAlpha = 1;
         const startY = -(Math.ceil(yRange[1]) - yRange[1]) * stepHeight; // start y coordinate for drawing grid ( can be negative if yRange[1] is not integer )
         for (let y = startY; pitch >= 0; y += stepHeight, pitch--) {
             const _y = Math.round(y);
@@ -199,9 +209,28 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
             ctx.fillRect(0, _y, width, -stepHeight);
             ctx.fillStyle = colorGridLines;
             ctx.fillRect(0, _y, width, -1); //crisp lines
-            drawNote(ctx, pitch, _y, stepHeight);
 
+            drawNote(ctx, pitch, _y, stepHeight);
         }
+
+        //draw vertical grid lines
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = colorGridSection;
+        var index = 0;
+        var span
+        for (let i = xRange[0]; i <= xRange[1]; i += timeBase) {
+            if (index % 2 == 0) {
+                ctx.globalAlpha = 0.4
+            }
+            else {
+                ctx.globalAlpha = 0.25
+            }
+            ctx.fillRect(i, 0, i + timeBase, height);
+            ctx.strokeRect(i, 0, i + timeBase, height);
+            index++;
+        }
+
+
     }, [width, height, xRange, yRange, colorGridLines]);
 
 
@@ -221,8 +250,9 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
             ctx.strokeStyle = colorNoteBorder;
         }
 
-        ctx.fillRect(xStart, y-1, xEnd - xStart, -noteHeight +1);
-        ctx.strokeRect(xStart, y-1, xEnd - xStart, -noteHeight +1);
+        ctx.globalAlpha = 1;
+        ctx.fillRect(xStart, y - 1, xEnd - xStart, -noteHeight + 1);
+        ctx.strokeRect(xStart, y - 1, xEnd - xStart, -noteHeight + 1);
 
 
     }, [
@@ -237,12 +267,12 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
     ]);
 
     const drawKeyboard = useCallback((ctx) => {
-        const width = ctx.canvas.width;
+
         const ySpan = yRange[1] - yRange[0]; // Range from min to max note
         if (ySpan <= 0) return; // Invalid range
 
         const stepHeight = height / ySpan;
-        let startNote = Math.floor(yRange[1])  + 1; // Start note for drawing keys
+        let startNote = Math.floor(yRange[1]) + 1; // Start note for drawing keys
         const startY = -(Math.ceil(yRange[1]) - yRange[1]) * stepHeight; // Start Y coordinate for drawing keys
 
         for (let y = startY; y <= height + stepHeight; y += stepHeight, startNote--) {
@@ -259,7 +289,7 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
             if (halfTone & 4) {
                 ctx.fillStyle = colorDarkKeys
                 ctx.font = '20px Arial';
-                ctx.fillText('C', keyboardWidth - 25, y-10);
+                ctx.fillText('C', keyboardWidth - 25, y - 10);
             }
 
         }
@@ -272,25 +302,57 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
         ctx.fillRect(position, 0, 1, height);
     }, [cursorPosition, xRange, yRulerSize, colorNoteSelected]);
 
+    const drawSelectionArea = useCallback((ctx) => {
+        if (!selectionRect) return;
+        ctx.fillStyle = colorSelectionArea;
+        ctx.fillRect(selectionRect[0], selectionRect[1], selectionRect[2], selectionRect[3]);
+    }, [selectionRect]);
+
     const handleMouseDownOnSequencer = (e: React.MouseEvent) => {
 
-        setDragging({
-            action: "drag",
-            start: [e.clientX, e.clientY],
-            startTime: Date.now(),
-            startNote: cursorPosition
-        });
 
         const rect = canvasRef.current?.getBoundingClientRect();
         if (!rect) return;
         const relativeY = e.clientY - rect.top;
         const relativeX = e.clientX - rect.left;
+        console.log('relativeX', relativeX);
         const pitch = Math.floor((height - relativeY) / (height / 128));
         const time = Math.floor((relativeX - yRulerSize - keyboardWidth) / (width / xRange[1] - xRange[0]));
 
+        setDragging({
+            action: "drag",
+            start: [e.clientX, e.clientY],
+            startTime: Date.now(),
+            startNote: cursorPosition,
+            startPos: [relativeX, relativeY],
+        });
 
-        setMidiNotes([...midiNotes, { time: { start: time, end: time + 1 }, grid: 1, selected: false, pitch: pitch }]);
+
+        // setMidiNotes(prevMidiNotes => {
+        //     const newMidiNotes = { ...prevMidiNotes };
+        //     if (!newMidiNotes[pitch]) {
+        //         newMidiNotes[pitch] = [];
+        //     }
+        //     newMidiNotes[pitch] = [
+        //         ...newMidiNotes[pitch],
+        //         { time: { start: time, end: time + 1 }, grid: 1, selected: false, pitch: pitch }
+        //     ];
+        //     return newMidiNotes;
+        // });
     };
+
+    const handleMouseMoveOnSequencer = (e: MouseEvent) => {
+
+        if (!dragging || !dragging.startPos) return;
+
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        setSelectionRect([dragging.startPos[0], dragging.startPos[1], x - dragging.startPos[0], y - dragging.startPos[1]]);
+
+    }
 
 
 
@@ -311,9 +373,8 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
             deltaX = deltaX / 10;
             var top = yRange[0] + deltaX + deltaY;
             var bottom = yRange[1] - deltaX + deltaY;
-            
-            
-            return [top<0?0:top, bottom>128?128:bottom];
+
+            return [top < 0 ? 0 : top, bottom > 128 ? 128 : bottom];
         });
 
 
@@ -326,7 +387,16 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
 
     return (
         <div className='relative'>
-            <div id="ruler" style={{ width: width, height: yRulerSize, backgroundColor: colorRulerBackground, color: colorRulerForeground, border: `1px solid ${colorRulerBorder}` }}></div>
+            <div id="ruler" style={{ width: width + keyboardWidth, height: yRulerSize, backgroundColor: colorRulerBackground, color: colorRulerForeground, display: "flex" }}>
+                <div style={{ width: keyboardWidth, height: yRulerSize, backgroundColor: colorRulerBackground, color: colorRulerForeground, borderRight: `1px solid ${colorRulerForeground}` }}></div>
+                <div style={{ width: "100%", height: yRulerSize, backgroundColor: colorRulerBackground, color: colorRulerForeground, display: "flex", flex: 1 }}>
+                    <div style={{ flex: 1, borderLeft: `1px solid ${colorRulerForeground}` }}></div>
+                    <div style={{ flex: 1, borderLeft: `1px solid ${colorRulerForeground}` }}></div>
+                    <div style={{ flex: 1, borderLeft: `1px solid ${colorRulerForeground}` }}></div>
+                    <div style={{ flex: 1, borderLeft: `1px solid ${colorRulerForeground}` }}></div>
+                </div>
+
+            </div>
             <div style={{ display: 'flex' }}>
                 <canvas id="keyboard"
                     style={{ backgroundColor: "fff" }}
@@ -353,7 +423,9 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
                         width={width}
                         height={height}
                         style={{ display: 'block' }}
+                        onMouseDown={handleMouseDownOnSequencer}
                     ></canvas>
+
                 </div>
             </div>
         </div >
