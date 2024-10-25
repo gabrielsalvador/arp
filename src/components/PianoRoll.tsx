@@ -210,7 +210,7 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
             ctx.fillStyle = colorGridLines;
             ctx.fillRect(0, _y, width, -1); //crisp lines
 
-            drawNote(ctx, pitch, _y, stepHeight);
+            drawNote(ctx, pitch, _y, stepHeight,xRange);
         }
 
         //draw vertical grid lines
@@ -234,7 +234,7 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
     }, [width, height, xRange, yRange, colorGridLines]);
 
 
-    const drawNote = useCallback((ctx, pitch, y, stepHeight) => {
+    const drawNote = useCallback((ctx, pitch, y, stepHeight,rangeX) => {
         const note = midiNotes[pitch];
         if (!note) return;
 
@@ -264,6 +264,8 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
         colorNoteSelected,
         colorNoteBorder,
         colorNoteSelectedBorder,
+        midiNotes,
+        
     ]);
 
     const drawKeyboard = useCallback((ctx) => {
@@ -328,17 +330,17 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
         });
 
 
-        // setMidiNotes(prevMidiNotes => {
-        //     const newMidiNotes = { ...prevMidiNotes };
-        //     if (!newMidiNotes[pitch]) {
-        //         newMidiNotes[pitch] = [];
-        //     }
-        //     newMidiNotes[pitch] = [
-        //         ...newMidiNotes[pitch],
-        //         { time: { start: time, end: time + 1 }, grid: 1, selected: false, pitch: pitch }
-        //     ];
-        //     return newMidiNotes;
-        // });
+        setMidiNotes(prevMidiNotes => {
+            const newMidiNotes = { ...prevMidiNotes };
+            if (!newMidiNotes[pitch]) {
+                newMidiNotes[pitch] = [];
+            }
+            newMidiNotes[pitch] = [
+                ...newMidiNotes[pitch],
+                { time: { start: time, end: time + 1 }, grid: 1, selected: false, pitch: pitch }
+            ];
+            return newMidiNotes;
+        });
     };
 
     const handleMouseMoveOnSequencer = (e: MouseEvent) => {

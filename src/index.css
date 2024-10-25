@@ -1,0 +1,21 @@
+/* Disable text selection for all elements */
+* {
+  user-select: none;          /* Standard syntax */
+  -webkit-user-select: none;  /* Chrome, Safari, Opera */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* Internet Explorer/Edge */
+}
+
+/* later replace this with tailwindcss */
+
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
+
+.m-2 {
+  margin: 0.5rem;
+  background-color: aliceblue;
+}
