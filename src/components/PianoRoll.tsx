@@ -338,6 +338,7 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
     };
 
     const handlDoubleClickOnSequencer = (e: React.MouseEvent) => {
+        // debugger
         const rect = canvasRef.current?.getBoundingClientRect();
         if (!rect) return;
         const x = e.clientX - rect.left;
@@ -453,19 +454,20 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
                         ref={canvasRef}
                         width={width}
                         height={height}
-                        style={{ display: 'block' }}
-                        onMouseDown={handleMouseDownOnSequencer}
-                        data-testid="canvas"
-                        data-midi-notes={JSON.stringify(midiNotes)}
+                        style={{ display: 'block' }}                        
                     >
                     </canvas>
                     <canvas className='absolute'
+                        id="overlay"
                         ref={overlayCanvasRef}
                         width={width}
                         height={height}
                         style={{ display: 'block' }}
                         onMouseDown={handleMouseDownOnSequencer}
                         onDoubleClick={handlDoubleClickOnSequencer}
+                        data-testid="canvas"
+                        data-midi-notes={JSON.stringify(midiNotes)}
+
                     ></canvas>
 
                 </div>
