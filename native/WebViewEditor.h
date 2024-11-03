@@ -5,7 +5,6 @@
 
 #include <choc_WebView.h>
 
-#include "EventScheduler.h"
 
 //==============================================================================
 // A simple juce::AudioProcessorEditor that holds a choc::WebView and sets the
@@ -30,7 +29,7 @@ private:
     //==============================================================================
     std::unique_ptr<choc::ui::WebView> webView;
 
-    EventScheduler eventScheduler;
+    
 
 
 #if JUCE_MAC
