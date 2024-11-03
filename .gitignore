@@ -3,3 +3,4 @@ node_modules
 dist
 remote-debug-profile
 bun.lockb
+/native/build
