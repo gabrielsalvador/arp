@@ -4,3 +4,6 @@ dist
 remote-debug-profile
 bun.lockb
 /native/build
+/native/elementary
+/native/juce
+/native/choc
