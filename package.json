@@ -4,7 +4,9 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "test": "npx vitest --inspect-brk --pool threads --poolOptions.threads.singleThread"
+    "test": "npx vitest --inspect-brk --pool threads --poolOptions.threads.singleThread",
+    "dev-native": "zx scripts/build-native.mjs --dev"
+
   },
   "dependencies": {
     "@testing-library/jest-dom": "^6.6.2",
