@@ -6,7 +6,6 @@
     "serve": "vite preview",
     "test": "npx vitest --inspect-brk --pool threads --poolOptions.threads.singleThread",
     "dev-native": "zx scripts/build-native.mjs --dev"
-
   },
   "dependencies": {
     "@testing-library/jest-dom": "^6.6.2",
@@ -21,6 +20,7 @@
     "@types/react": "^18.3.11",
     "jsdom": "^25.0.1",
     "vite": "^5.0.8",
-    "vitest": "^2.1.2"
+    "vitest": "^2.1.2",
+    "zx": "^8.2.0"
   }
 }
