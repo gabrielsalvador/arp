@@ -6,7 +6,7 @@
         "left-sidebar    main main   right-sidebar"
         "left-footer     left-footer  right-footer  right-footer";
     grid-template-columns: 7rem 1fr 1fr 12rem;
-    grid-template-rows: 4rem 1fr 1fr 26rem;
+    grid-template-rows: 4rem 1fr 1fr 18rem;
     position: fixed;
     top: 0;
     left: 0;
