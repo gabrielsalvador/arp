@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "WebViewEditor.h"
+#include "Arp.h"
 
 // A helper for reading numbers from a choc::Value, which seems to opportunistically parse
 // JSON numbers into ints or 32-bit floats whenever it wants.
@@ -129,8 +130,7 @@ WebViewEditor::WebViewEditor(juce::AudioProcessor *proc, juce::File const &asset
             }
             if(eventName == "toogleplay") {
                 auto *ptr = dynamic_cast<EffectsPluginProcessor*>(getAudioProcessor());
-                ptr->isPlaying = !ptr->isPlaying;
-                std::string json = "{\"isPlaying\": " + std::string(ptr->isPlaying ? "true" : "false") + "}";
+                std::string json = ptr->arp.toJson();
                 return choc::value::Value(json);
             }
             else if(eventName == "getEventList"){
