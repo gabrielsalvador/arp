@@ -92,6 +92,7 @@ WebViewEditor::WebViewEditor(juce::AudioProcessor *proc, juce::File const &asset
 
             if (eventName == "setParameterValue" && args.size() > 1) {
                 return handleSetParameterValueEvent(args[1]);
+                
             }
             // if eventName starts with "click"
             if(eventName.substr(0, 5) == "click"){
@@ -133,13 +134,15 @@ WebViewEditor::WebViewEditor(juce::AudioProcessor *proc, juce::File const &asset
                 return choc::value::Value(json);
             }
             else if(eventName == "getEventList"){
+                //print test
                 std::cout << "getEventList" << std::endl;
+
+
+                
             }
         }
 
-        return choc::value::Value("ok");
-        }
-    );
+        return {}; });
 
 #if ELEM_DEV_LOCALHOST
     webView->navigate("http://localhost:5173");

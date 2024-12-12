@@ -66,6 +66,7 @@ public:
     void dispatchStateChange();
     void dispatchError(std::string const& name, std::string const& message);
 
+    Arp arp;
 private:
     //==============================================================================
     std::atomic<bool> shouldInitialize { false };
