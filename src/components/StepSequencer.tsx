@@ -18,9 +18,9 @@ export const StepSequencer = ({ setLog }: StepSequencerProps) => {
     });
   }, []);
 
-  const handleCycleIncrease = (index) => {
+  const handleCycleIncrease = (index,amount) => {
     // @ts-ignore
-    __postNativeMessage__(`cycle ${index} +1`).then((response) => {
+    __postNativeMessage__(`cycle ${index} ${amount}`).then((response) => {
       setLog([response]);
       const parsed = JSON.parse(response);
       setSteps(parsed.steps);
@@ -42,11 +42,12 @@ export const StepSequencer = ({ setLog }: StepSequencerProps) => {
             pitches={steps[index].pitches}
           />
           <button
-            onClick={() => handleCycleIncrease(index)}
+            onClick={() => handleCycleIncrease(index,1)}
             className="border-2 border-black w-8 h-4 mt-1"
           >+
           </button>
-          <button className="border-2 border-black w-8 h-4 mt-1">
+          <button className="border-2 border-black w-8 h-4 mt-1"
+            onClick={() => handleCycleIncrease(index,-1)}>
             -
           </button>
         </div>
