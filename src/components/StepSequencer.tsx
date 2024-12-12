@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Step } from "../structures";
 import { StepButton } from "./StepButton";
 
@@ -26,6 +26,10 @@ export const StepSequencer = ({ setLog }: StepSequencerProps) => {
       setSteps(parsed.steps);
     });
   };
+
+  useEffect(() => {
+    sync();
+  },[]);
 
   return (
     <div className="flex flex-row justify-center">
