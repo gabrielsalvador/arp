@@ -47,4 +47,14 @@ if (argv.clean || !(await fs.pathExists('CMakeCache.txt'))) {
 
 // Use available CPU cores for parallel builds
 const cpuCount = os.cpus().length;
-await $`cmake --build . --config ${buildType} -j ${cpuCount}`;
+try {
+  await $`cmake --build . --config ${buildType} -j ${cpuCount}`;
+  
+  // If build was successful, open the program
+  const executablePath = path.join(buildDir,"ARP_artefacts", buildType, 'Standalone/ARP.app/Contents/MacOS/ARP')
+  echo('Build successful! Opening program...');
+  await $`${executablePath}`;
+} catch (error) {
+  echo('Build failed:', error.message);
+  process.exit(1);
+}
