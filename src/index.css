@@ -17,5 +17,33 @@
 
 .m-2 {
   margin: 0.5rem;
-  background-color: aliceblue;
+}
+.mt-3 {
+  margin-top: 0.75rem;
+}
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.w-8 {
+  width: 2rem;
+}
+.h-8 {
+  height: 2rem;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.text-center {
+  text-align: center;
 }
