@@ -92,17 +92,54 @@ WebViewEditor::WebViewEditor(juce::AudioProcessor *proc, juce::File const &asset
 
             if (eventName == "setParameterValue" && args.size() > 1) {
                 return handleSetParameterValueEvent(args[1]);
+            }
+            // if eventName starts with "click"
+            if(eventName.substr(0, 5) == "click"){
+                auto *ptr = dynamic_cast<EffectsPluginProcessor*>(getAudioProcessor());
+                std::string json = ptr->arp.toJson();
+                return choc::value::Value(json);
+            }
+            // Handle cycle length changes
+            if(eventName.substr(0, 5) == "cycle") {
+                auto *ptr = dynamic_cast<EffectsPluginProcessor*>(getAudioProcessor());
                 
-            }else if(eventName == "getEventList"){
-                //print test
+                // Parse the message after "cycle "
+                std::string msg = std::string(eventName.substr(6));
+                
+                // Find the space between index and change amount
+                size_t spacePos = msg.find(" ");
+                if(spacePos != std::string::npos) {
+                    // Extract index and change amount
+                    int index = std::stoi(msg.substr(0, spacePos));
+                    std::string changeStr = msg.substr(spacePos + 1);
+                    int change = std::stoi(changeStr);
+                    
+                    // Update cycle length
+                    ptr->arp.updateCycleLength(index, change);
+                    
+                    std::string json = ptr->arp.toJson();
+                    return choc::value::Value(json);
+                }
+            }
+            if(eventName.substr(0, 4) == "sync"){
+                auto *ptr = dynamic_cast<EffectsPluginProcessor*>(getAudioProcessor());
+                std::string json = ptr->arp.toJson();
+                return choc::value::Value(json);
+            }
+            if(eventName == "toogleplay") {
+                auto *ptr = dynamic_cast<EffectsPluginProcessor*>(getAudioProcessor());
+                ptr->isPlaying = !ptr->isPlaying;
+                std::string json = "{\"isPlaying\": " + std::string(ptr->isPlaying ? "true" : "false") + "}";
+                return choc::value::Value(json);
+            }
+            else if(eventName == "getEventList"){
                 std::cout << "getEventList" << std::endl;
-
-
-                
             }
         }
 
-        return {}; });
+        return choc::value::Value("ok");
+        }
+    );
 
 #if ELEM_DEV_LOCALHOST
     webView->navigate("http://localhost:5173");
