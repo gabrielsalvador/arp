@@ -43,9 +43,11 @@ export const StepSequencer = ({ setLog }: StepSequencerProps) => {
           />
           <button
             onClick={() => handleCycleIncrease(index)}
-            className="border-2 border-black w-8 h-8 mt-1"
-          >
-            +
+            className="border-2 border-black w-8 h-4 mt-1"
+          >+
+          </button>
+          <button className="border-2 border-black w-8 h-4 mt-1">
+            -
           </button>
         </div>
       ))}
