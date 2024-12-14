@@ -476,6 +476,24 @@ void EffectsPluginProcessor::setStateInformation(const void *data, int sizeInByt
     }
 }
 
+// For standalone mode, playback is considered to have started as soon as the app loads
+// (this refers to 'daw' playback. in standalone mode we default to playback type 'instant'
+// which means that stochas only starts playing when play button is hit),
+// so we just need to calculate our beat position based on that
+double EffectsPluginProcessor::getStandaloneBeatPosition()
+{
+    double currentTime = juce::Time::getMillisecondCounterHiRes();
+
+    // elapsed m/s since start
+    double elapsed = currentTime - mStandaloneStartTime;
+
+    // tempo in beats per ms
+    double bpms = mStandaloneTempo / (60 * 1000);
+
+    // how many beats have elapsed since play start
+    return elapsed * bpms;
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()

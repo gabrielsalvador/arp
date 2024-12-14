@@ -67,6 +67,17 @@ public:
     void dispatchError(std::string const& name, std::string const& message);
 
     Arp arp;
+    
+    // For standalone mode only:
+   double mStandaloneTempo; // current tempo in bpm
+   // tick count when playback started or when tempo changed
+   // playback in standalone mode starts as soon as we launch.
+   // Current position is calculated based on the standalone tempo
+   // and this start time
+   double mStandaloneStartTime; 
+   double getStandaloneBeatPosition();
+    
+    
 private:
     //==============================================================================
     std::atomic<bool> shouldInitialize { false };

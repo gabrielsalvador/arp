@@ -96,6 +96,15 @@ public:
         return ss.str();
     }
 
+    const Node * getStep(int index) {
+        int readBufferIndex = currentBufferIndex.load(std::memory_order_acquire);
+        return &buffers[readBufferIndex].notes[index];
+    }
+
+    int getNumSteps() const {
+        return 16;
+    }
+
 private:
     struct Buffer {
         Node notes[16];
