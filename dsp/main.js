@@ -45,10 +45,10 @@ globalThis.__receiveStateChange__ = (serializedState) => {
     console.log(stats);
   } else {
     console.log('Updating refs');
-    refs.update('size', {value: state.size});
-    refs.update('decay', {value: state.decay});
-    refs.update('mod', {value: state.mod});
-    refs.update('mix', {value: state.mix});
+    // refs.update('size', {value: state.size});
+    // refs.update('decay', {value: state.decay});
+    // refs.update('mod', {value: state.mod});
+    // refs.update('mix', {value: state.mix});
   }
 
   prevState = state;
